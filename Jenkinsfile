@@ -33,6 +33,12 @@ choice(
 
     }
 
+    environment {
+        ENV = "${params.ENV}"
+        SUITES = "${params.SUITES}"
+        BROWSERS = "${params.BROWSERS}"
+    }
+
     stages {
 
         stage('Checkout') {
@@ -57,36 +63,27 @@ choice(
     stage('Run Tests') {
     steps {
 
-        sh """
-            echo Browser : ${params.BROWSERS}
-            echo Environment : ${params.ENV}
-            echo Suites : ${params.SUITE}
-        """
-
         script {
 
-            // Convert browsers into a list
-            def browsers = params.BROWSERS
-                    .split(',')
-                    .collect { it.trim() }
+            echo "Browsers : ${BROWSERS}"
+            echo "Environment : ${ENV}"
+            echo "Suites : ${SUITES}"
 
-            // Convert suites into grep pattern
-            def grepPattern = params.SUITES
-                    .split(',')
-                    .collect { "@${it.trim()}" }
-                    .join('|')
+            def browserArgs = BROWSERS
+                .split(',')
+                .collect { "--project=${it.trim()}" }
+                .join(' ')
 
-            for (browser in browsers) {
+            def grepPattern = SUITES
+                .split(',')
+                .collect { "@${it.trim()}" }
+                .join('|')
 
-                echo "Running on ${browser}"
-
-                sh """
-                    TEST_ENV=${params.ENV} \
-                    npx playwright test \
-                    --project=${browser} \
-                    --grep "${grepPattern}"
-                """
-            }
+            sh """
+                npx playwright test \
+                ${browserArgs} \
+                --grep "${grepPattern}"
+            """
         }
     }
 }
