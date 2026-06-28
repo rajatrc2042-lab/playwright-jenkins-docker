@@ -8,6 +8,29 @@ pipeline {
     tools {
         nodejs 'node20'
     }
+
+    parameters {
+
+        choice(
+            name: 'BROWSER',
+            choices: ['chromium', 'firefox', 'webkit'],
+            description: 'Select Browser'
+        )
+
+        choice(
+            name: 'ENV',
+            choices: ['qa', 'uat', 'prod'],
+            description: 'Select Environment'
+        )
+
+        choice(
+            name: 'SUITE',
+            choices: ['smoke', 'regression', 'sanity'],
+            description: 'Select Test Suite'
+        )
+
+    }
+    
     stages {
 
         stage('Checkout') {
