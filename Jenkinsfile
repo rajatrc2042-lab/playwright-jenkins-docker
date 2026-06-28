@@ -11,11 +11,17 @@ pipeline {
 
     parameters {
 
-        choice(
-            name: 'BROWSER',
-            choices: ['chromium', 'firefox', 'webkit'],
-            description: 'Select Browser'
-        )
+        string(
+    name: 'BROWSERS',
+    defaultValue: 'chromium',
+    description: 'Comma separated browsers. Example: chromium,firefox'
+)
+
+string(
+    name: 'BROWSERS',
+    defaultValue: 'firefox',
+    description: 'Comma separated browsers. Example: chromium,firefox'
+)
 
         choice(
             name: 'ENV',
@@ -23,11 +29,11 @@ pipeline {
             description: 'Select Environment'
         )
 
-        choice(
-            name: 'SUITE',
-            choices: ['smoke', 'regression', 'sanity'],
-            description: 'Select Test Suite'
-        )
+        string(
+    name: 'SUITES',
+    defaultValue: 'smoke',
+    description: 'Example: smoke,regression'
+)
 
     }
 
@@ -60,11 +66,18 @@ pipeline {
             echo Environment : ${params.ENV}
             echo Suite : ${params.SUITE}
         """
-
+def browsers = params.BROWSERS.split(',')
+def grepPattern = params.SUITES
+        .split(',')
+        .collect { "@${it.trim()}" }
+        .join('|')
+for (browser in browsers) {
         sh "ENV=${params.ENV} \
             npx playwright test \
             --project=${params.BROWSER} \
-            --grep @${params.SUITE}"
+            --grep "${grepPattern}"
+    """
+}
     }
 }
     }
