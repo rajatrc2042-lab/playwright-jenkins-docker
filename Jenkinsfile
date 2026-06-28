@@ -30,7 +30,7 @@ pipeline {
         )
 
     }
-    
+
     stages {
 
         stage('Checkout') {
@@ -54,7 +54,12 @@ pipeline {
 }
         stage('Run Tests') {
             steps {
-                sh 'npx playwright test'
+                 sh """
+                echo Browser : ${params.BROWSER}
+                echo Environment : ${params.ENV}
+                echo Suite : ${params.SUITE}
+                """
+                sh 'npx playwright test ---project=${params.BROWSER}'
     }
 }
     }
