@@ -66,18 +66,27 @@ string(
             echo Environment : ${params.ENV}
             echo Suite : ${params.SUITE}
         """
-def browsers = params.BROWSERS.split(',')
-def grepPattern = params.SUITES
-        .split(',')
-        .collect { "@${it.trim()}" }
-        .join('|')
-for (browser in browsers) {
-        sh "ENV=${params.ENV} \
-            npx playwright test \
-            --project=${params.BROWSER} \
-            --grep "${grepPattern}"
-    """
-}
+ // Convert browsers into a list
+            def browsers = params.BROWSERS
+                    .split(',')
+                    .collect { it.trim() }
+
+            // Convert suites into Playwright grep regex
+            def grepPattern = params.SUITES
+                    .split(',')
+                    .collect { "@${it.trim()}" }
+                    .join('|')
+            for (browser in browsers) {
+
+                echo "Running on ${browser}"
+
+                sh """
+                    TEST_ENV=${params.TEST_ENV} \
+                    npx playwright test \
+                    --project=${browser} \
+                    --grep "${grepPattern}"
+                """
+            }
     }
 }
     }
