@@ -19,7 +19,7 @@ pipeline {
 
         choice(
             name: 'ENV',
-            choices: ['qa', 'uat', 'prod'],
+            choices: ['dev', 'qa', 'prod'],
             description: 'Select Environment'
         )
 
@@ -53,13 +53,18 @@ pipeline {
     }
 }
         stage('Run Tests') {
-            steps {
-                 sh """
-                echo Browser : ${params.BROWSER}
-                echo Environment : ${params.ENV}
-                echo Suite : ${params.SUITE}
-                """
-                sh 'npx playwright test ---project=${params.BROWSER}'
+    steps {
+
+        sh """
+            echo Browser : ${params.BROWSER}
+            echo Environment : ${params.ENV}
+            echo Suite : ${params.SUITE}
+        """
+
+        sh "ENV=${params.ENV} \
+            npx playwright test \
+            --project=${params.BROWSER} \
+            --grep @${params.SUITE}"
     }
 }
     }
