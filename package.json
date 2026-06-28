@@ -2,6 +2,7 @@
   "name": "playwright-demo",
   "version": "1.0.0",
   "description": "playwright demo for docker",
+  "type": "module",
   "main": "index.js",
   "scripts": {},
   "keywords": [],
