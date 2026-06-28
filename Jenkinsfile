@@ -17,23 +17,19 @@ pipeline {
     description: 'Comma separated browsers. Example: chromium,firefox'
 )
 
-string(
-    name: 'BROWSERS',
-    defaultValue: 'firefox',
-    description: 'Comma separated browsers. Example: chromium,firefox'
-)
-
-        choice(
-            name: 'ENV',
-            choices: ['dev', 'qa', 'prod'],
-            description: 'Select Environment'
-        )
+        
 
         string(
     name: 'SUITES',
     defaultValue: 'smoke',
     description: 'Example: smoke,regression'
 )
+
+choice(
+            name: 'ENV',
+            choices: ['dev', 'qa', 'prod'],
+            description: 'Select Environment'
+        )
 
     }
 
@@ -58,35 +54,40 @@ string(
                 sh 'npm ci'
     }
 }
-        stage('Run Tests') {
+    stage('Run Tests') {
     steps {
 
         sh """
-            echo Browser : ${params.BROWSER}
+            echo Browser : ${params.BROWSERS}
             echo Environment : ${params.ENV}
-            echo Suite : ${params.SUITE}
+            echo Suites : ${params.SUITE}
         """
- // Convert browsers into a list
+
+        script {
+
+            // Convert browsers into a list
             def browsers = params.BROWSERS
                     .split(',')
                     .collect { it.trim() }
 
-            // Convert suites into Playwright grep regex
+            // Convert suites into grep pattern
             def grepPattern = params.SUITES
                     .split(',')
                     .collect { "@${it.trim()}" }
                     .join('|')
+
             for (browser in browsers) {
 
                 echo "Running on ${browser}"
 
                 sh """
-                    TEST_ENV=${params.TEST_ENV} \
+                    TEST_ENV=${params.ENV} \
                     npx playwright test \
                     --project=${browser} \
                     --grep "${grepPattern}"
                 """
             }
+        }
     }
 }
     }
