@@ -47,9 +47,9 @@ pipeline {
             reportName: 'Playwright Report'
         ])
         archiveArtifacts(
-                artifacts: 'playwright-report/**',
-                fingerprint: true
-            )
+            artifacts: 'playwright-report/**,test-results/**',
+            fingerprint: true
+        )
     }
 }
 }
