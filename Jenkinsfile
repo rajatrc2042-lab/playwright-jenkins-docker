@@ -1,7 +1,7 @@
 pipeline {
         agent {
             docker {
-                image 'mcr.microsoft.com/playwright:v1.61.0-noble'
+                image 'playwright-java:1.0'
                 reuseNode true
             }
         }
@@ -127,7 +127,7 @@ pipeline {
 
             results: [[path: 'allure-results']]
 
-        )
+            )
             // publishHTML(target: [
             //     allowMissing: false,
             //     alwaysLinkToLastBuild: true,
@@ -137,9 +137,9 @@ pipeline {
             //     reportName: 'Playwright Report'
             // ])
             archiveArtifacts(
-                artifacts: 'playwright-report/**,test-results/**',
-                fingerprint: true
-            )
+            artifacts: 'playwright-report/**,test-results/**',
+            fingerprint: true
+        )
         // cleanWs()
         }
     }
