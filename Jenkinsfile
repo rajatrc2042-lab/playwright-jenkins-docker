@@ -40,7 +40,22 @@ choice(
     }
 
     stages {
-
+        stage('Use Credentials') {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'qa-test',
+                usernameVariable: 'USERNAME',
+                passwordVariable: 'PASSWORD'
+            )
+        ]) {
+            sh '''
+                echo "Username: $USERNAME"
+                echo "Password length: ${#PASSWORD}"
+            '''
+        }
+    }
+}
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -88,6 +103,7 @@ choice(
     }
 }
     }
+    
     
    post {
     always {
