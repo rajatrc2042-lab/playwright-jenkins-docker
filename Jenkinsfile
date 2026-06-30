@@ -1,124 +1,137 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.61.0-noble'
-            reuseNode true
+        agent {
+            docker {
+                image 'mcr.microsoft.com/playwright:v1.61.0-noble'
+                reuseNode true
+            }
         }
-    }
-    tools {
-        nodejs 'node20'
-    }
-
-    parameters {
-
-        string(
-    name: 'BROWSERS',
-    defaultValue: 'chromium',
-    description: 'Comma separated browsers. Example: chromium,firefox'
-)
-
-        
-
-        string(
-    name: 'SUITES',
-    defaultValue: 'smoke',
-    description: 'Example: smoke,regression'
-)
-
-choice(
-            name: 'ENV',
-            choices: ['dev', 'qa', 'prod'],
-            description: 'Select Environment'
+        tools {
+            nodejs 'node20'
+        }
+    options {
+        timeout(
+        time: 1,
+        unit: 'MINUTES'
+    )
+        buildDiscarder(
+        logRotator(
+            numToKeepStr: '10'
         )
-
+    )
     }
+        parameters {
+            string(
+        name: 'BROWSERS',
+        defaultValue: 'chromium',
+        description: 'Comma separated browsers. Example: chromium,firefox'
+    )
 
-    environment {
-        ENV = "${params.ENV}"
-        SUITES = "${params.SUITES}"
-        BROWSERS = "${params.BROWSERS}"
-    }
+            string(
+        name: 'SUITES',
+        defaultValue: 'smoke',
+        description: 'Example: smoke,regression'
+    )
 
-    stages {
-        stage('Use Credentials') {
-    steps {
-        withCredentials([
-            usernamePassword(
-                credentialsId: 'qa-test',
-                usernameVariable: 'USERNAME',
-                passwordVariable: 'PASSWORD'
+        choice(
+                name: 'ENV',
+                choices: ['dev', 'qa', 'prod'],
+                description: 'Select Environment'
             )
-        ]) {
-            sh '''
-                echo "Username: $USERNAME"
-                echo "Password length: ${#PASSWORD}"
-            '''
         }
-    }
-}
-        stage('Checkout') {
+
+        environment {
+            ENV = "${params.ENV}"
+            SUITES = "${params.SUITES}"
+            BROWSERS = "${params.BROWSERS}"
+        }
+
+        stages {
+            stage('Use Credentials') {
             steps {
-                git branch: 'main',
-                url: 'https://github.com/rajatrc2042-lab/playwright-jenkins-docker.git'
+                withCredentials([
+                usernamePassword(
+                    credentialsId: 'qa-test',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )
+            ]) {
+                    sh '''
+                    echo "Username: $USERNAME"
+                    echo "Password length: ${#PASSWORD}"
+                '''
+            }
+            }
+            }
+            stage('Checkout') {
+                steps {
+                    git branch: 'main',
+                    url: 'https://github.com/rajatrc2042-lab/playwright-jenkins-docker.git'
+                }
+            }
+
+            stage('Verify') {
+                steps {
+                    sh 'pwd'
+                    sh 'ls -la'
+                }
+            }
+
+            stage('Install') {
+                steps {
+                    retry(2) {
+                    sh 'npm ci'
+                    }
+                }
+            }
+        stage('Run Tests') {
+            steps {
+                script {
+                    echo "Browsers : ${BROWSERS}"
+                    echo "Environment : ${ENV}"
+                    echo "Suites : ${SUITES}"
+
+                    def browserArgs = BROWSERS
+                    .split(',')
+                    .collect { "--project=${it.trim()}" }
+                    .join(' ')
+
+                    def grepPattern = SUITES
+                    .split(',')
+                    .collect { "@${it.trim()}" }
+                    .join('|')
+
+                    sh """
+                    npx playwright test \
+                    ${browserArgs} \
+                    --grep "${grepPattern}"
+                """
+                }
             }
         }
-
-        stage('Verify') {
-            steps {
-                sh 'pwd'
-                sh 'ls -la'
-            }
         }
-        
-        stage('Install') {
-            steps {
-                sh 'npm ci'
-    }
-}
-    stage('Run Tests') {
-    steps {
 
-        script {
+    post {
+        success {
+            echo 'Tests Passed'
+        }
 
-            echo "Browsers : ${BROWSERS}"
-            echo "Environment : ${ENV}"
-            echo "Suites : ${SUITES}"
-
-            def browserArgs = BROWSERS
-                .split(',')
-                .collect { "--project=${it.trim()}" }
-                .join(' ')
-
-            def grepPattern = SUITES
-                .split(',')
-                .collect { "@${it.trim()}" }
-                .join('|')
-
-            sh """
-                npx playwright test \
-                ${browserArgs} \
-                --grep "${grepPattern}"
-            """
+        failure {
+            echo 'Tests Failed'
+        }
+        always {
+            publishHTML(target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                reportName: 'Playwright Report'
+            ])
+            archiveArtifacts(
+                artifacts: 'playwright-report/**,test-results/**',
+                fingerprint: true
+            )
+        // cleanWs()
         }
     }
-}
-    }
-    
-    
-   post {
-    always {
-        publishHTML(target: [
-            allowMissing: false,
-            alwaysLinkToLastBuild: true,
-            keepAll: true,
-            reportDir: 'playwright-report',
-            reportFiles: 'index.html',
-            reportName: 'Playwright Report'
-        ])
-        archiveArtifacts(
-            artifacts: 'playwright-report/**,test-results/**',
-            fingerprint: true
-        )
-    }
-}
 }

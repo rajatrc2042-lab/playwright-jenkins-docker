@@ -17,3 +17,6 @@ test('get started link', async ({ page }) => {
   // Expects page to have a heading with the name of Installation.
   await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
 });
+
+// await page.fill('#username', process.env.USERNAME!);     //for cred use from jenkins
+// await page.fill('#password', process.env.PASSWORD!);
