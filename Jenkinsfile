@@ -10,12 +10,12 @@ pipeline {
         }
     options {
         timeout(
-        time: 1,
+        time: 30,
         unit: 'MINUTES'
     )
         buildDiscarder(
         logRotator(
-            numToKeepStr: '10'
+            numToKeepStr: '20'
         )
     )
     }
@@ -119,14 +119,23 @@ pipeline {
             echo 'Tests Failed'
         }
         always {
-            publishHTML(target: [
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                reportName: 'Playwright Report'
-            ])
+            allure(
+
+            includeProperties: false,
+
+            jdk: '',
+
+            results: [[path: 'allure-results']]
+
+        )
+            // publishHTML(target: [
+            //     allowMissing: false,
+            //     alwaysLinkToLastBuild: true,
+            //     keepAll: true,
+            //     reportDir: 'playwright-report',
+            //     reportFiles: 'index.html',
+            //     reportName: 'Playwright Report'
+            // ])
             archiveArtifacts(
                 artifacts: 'playwright-report/**,test-results/**',
                 fingerprint: true
