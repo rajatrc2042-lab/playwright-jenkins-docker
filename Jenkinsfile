@@ -69,7 +69,7 @@ pipeline {
 
                     script {
                     currentBuild.displayName =
-        "#${env.BUILD_NUMBER} | ${params.BROWSER} | ${params.ENV} | ${params.TAGS}"
+        "#${env.BUILD_NUMBER} | ${params.BROWSERS} | ${params.ENV} | ${params.SUITES}"
                     }
                 }
             }
@@ -140,9 +140,9 @@ pipeline {
         ])
 
             archiveArtifacts(
-            artifacts: 'playwright-report/**,test-results/**',
+            artifacts: 'playwright-report/**, test-results/**, allure-results/**',
             fingerprint: true
-        )
+)
 
         // cleanWs()
         }
