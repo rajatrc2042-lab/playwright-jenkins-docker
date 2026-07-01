@@ -31,13 +31,6 @@ test('get started link @smoke', async ({ page }) => {
   // Expects page to have a heading with the name of Installation.
   await expect(page.getByRole('heading', { name: 'Instalvastion' })).toBeVisible();
 
-  await test.info().attach(
-    'Screenshot',
-    {
-        body: await page.screenshot(),
-        contentType: 'image/png'
-    }
-);
 });
 
 
