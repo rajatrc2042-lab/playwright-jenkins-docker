@@ -66,6 +66,11 @@ pipeline {
                 steps {
                     git branch: 'main',
                     url: 'https://github.com/rajatrc2042-lab/playwright-jenkins-docker.git'
+
+                    script {
+                    currentBuild.displayName =
+        "#${env.BUILD_NUMBER} | ${params.BROWSER} | ${params.ENV} | ${params.TAGS}"
+                    }
                 }
             }
 
@@ -120,26 +125,25 @@ pipeline {
         }
         always {
             allure(
-
             includeProperties: false,
-
             jdk: '',
-
             results: [[path: 'allure-results']]
+        )
 
-            )
-            // publishHTML(target: [
-            //     allowMissing: false,
-            //     alwaysLinkToLastBuild: true,
-            //     keepAll: true,
-            //     reportDir: 'playwright-report',
-            //     reportFiles: 'index.html',
-            //     reportName: 'Playwright Report'
-            // ])
+            publishHTML(target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'playwright-report',
+            reportFiles: 'index.html',
+            reportName: 'Playwright HTML Report'
+        ])
+
             archiveArtifacts(
             artifacts: 'playwright-report/**,test-results/**',
             fingerprint: true
         )
+
         // cleanWs()
         }
     }
