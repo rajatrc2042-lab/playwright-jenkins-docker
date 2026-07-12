@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        ENV = params.ENV
-        BROWSERS = params.BROWSERS
-        SUITES = params.SUITES
+        ENV = "${params.ENV}"
+        SUITES = "${params.SUITES}"
+        BROWSERS = "${params.BROWSERS}"
     }
     stages {
         stage('Checkout') {
