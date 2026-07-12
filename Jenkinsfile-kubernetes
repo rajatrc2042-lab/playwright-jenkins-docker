@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        ENV = params.ENV
+        BROWSERS = params.BROWSERS
+        SUITES = params.SUITES
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -21,23 +26,23 @@ pipeline {
             steps {
                 sh '''
                 kubectl get jobs -n automation
-                kubectl get jobs -n pods
-        kubectl apply -f k8s/playwright-job.yaml
-        '''
+                kubectl get pods -n automation
+                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+                '''
 
                 sh '''
-kubectl wait \
---for=condition=complete \
-job/playwright-job \
--n automation \
---timeout=120s
-'''
+                kubectl wait \
+                --for=condition=complete \
+                job/playwright-job \
+                -n automation \
+                --timeout=120s
+                '''
 
                 sh '''
-kubectl logs \
--n automation \
--l job-name=playwright-job
-'''
+                kubectl logs \
+                -n automation \
+                -l job-name=playwright-job
+                '''
             }
         }
     }

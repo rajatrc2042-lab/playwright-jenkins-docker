@@ -25,3 +25,13 @@ spec:
             - npx
             - playwright
             - test
+
+          env:
+            - name: ENV
+              value: "${ENV}"
+
+            - name: BROWSERS
+              value: "${BROWSER}"
+
+            - name: SUITES
+              value: "${SUITE}"

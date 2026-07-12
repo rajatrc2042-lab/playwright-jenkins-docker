@@ -10,7 +10,8 @@ import { defineConfig, devices } from "@playwright/test";
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 import dotenv from "dotenv";
-
+console.log("ENV =", process.env.ENV);
+console.log("Base URL =", process.env.BASE_URL);
 dotenv.config({
   path: `config/${process.env.ENV}.env`,
 });
