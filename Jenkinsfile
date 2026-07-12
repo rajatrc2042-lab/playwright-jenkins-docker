@@ -64,12 +64,13 @@ pipeline {
             }
             stage('Checkout') {
                 steps {
-                    git branch: 'main',
-                    url: 'https://github.com/rajatrc2042-lab/playwright-jenkins-docker.git'
+                    // git branch: 'main',
+                    // url: 'https://github.com/rajatrc2042-lab/playwright-jenkins-docker.git'
+                     checkout scm
 
                     script {
                     currentBuild.displayName =
-        "#${env.BUILD_NUMBER} | ${params.BROWSERS} | ${params.ENV} | ${params.SUITES}"
+        "#${env.BUILD_NUMBER} | ${params.BROWSERS} | ${params.ENV} | ${params.TAGS}"
                     }
                 }
             }

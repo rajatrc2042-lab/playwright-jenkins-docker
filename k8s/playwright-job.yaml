@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: playwright-job
+  namespace: automation
+
+spec:
+  backoffLimit: 0
+
+  template:
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: playwright
+
+          image: playwright-runner-kuber:latest
+
+          imagePullPolicy: Never
+
+          workingDir: /app
+
+          command:
+            - npx
+            - playwright
+            - test
