@@ -1,31 +1,42 @@
 pipeline {
-
     agent any
 
     stages {
-
         stage('Checkout') {
-
             steps {
-
                 checkout scm
-
             }
-
         }
 
         stage('Verify Kubernetes there') {
-
             steps {
-
                 sh '''
                 kubectl get nodes
                 kubectl get ns
                 '''
             }
-
         }
 
-    }
+        stage('Run Kubernetes Job') {
+            steps {
+                sh '''
+        kubectl apply -f k8s/playwright-job.yaml
+        '''
 
+                sh '''
+kubectl wait \
+--for=condition=complete \
+job/playwright-job \
+-n automation \
+--timeout=600s
+'''
+
+                sh '''
+kubectl logs \
+-n automation \
+-l job-name=playwright-job
+'''
+            }
+        }
+    }
 }
