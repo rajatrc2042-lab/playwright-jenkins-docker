@@ -23,54 +23,51 @@ pipeline {
         }
 
         stage('Run Kubernetes Tests') {
+            parallel {
 
-        parallel {
+                stage('Chromium') {
+                    steps {
+                        sh '''
+                        export BROWSER=chromium
+                        envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+                        '''
+                    }
+                }
 
-            stage('Chromium') {
-                steps {
-                    sh '''
-                    export BROWSER=chromium
-                    export BUILD_NUMBER=${BUILD_NUMBER}
-                    envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                    '''
+                stage('Firefox') {
+                    steps {
+                        sh '''
+                        export BROWSER=firefox
+                        envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+                        '''
+                    }
+                }
+
+                stage('WebKit') {
+                    steps {
+                        sh '''
+                        export BROWSER=webkit
+                        envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+                        '''
+                    }
                 }
             }
+}
 
-            stage('Firefox') {
-                steps {
-                    sh '''
-                    export BROWSER=firefox
-                    export BUILD_NUMBER=${BUILD_NUMBER}
-                    envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                    '''
-                }
+        stage('Wait For Jobs') {
+            steps {
+                sh '''
+                kubectl wait --for=condition=complete job/playwright-chromium-${BUILD_NUMBER} -n automation --timeout=120s
+                kubectl wait --for=condition=complete job/playwright-firefox-${BUILD_NUMBER} -n automation --timeout=120s
+                kubectl wait --for=condition=complete job/playwright-webkit-${BUILD_NUMBER} -n automation --timeout=120s
+                '''
+
+                sh '''
+                kubectl logs job/playwright-chromium-${BUILD_NUMBER} -n automation
+                kubectl logs job/playwright-firefox-${BUILD_NUMBER} -n automation
+                kubectl logs job/playwright-webkit-${BUILD_NUMBER} -n automation
+                '''
             }
-
-            stage('WebKit') {
-                steps {
-                    sh '''
-                    export BROWSER=webkit
-                    export BUILD_NUMBER=${BUILD_NUMBER}
-                    envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                    '''
-                }
-            }
-        }
-
-            steps{
-                    sh '''
-                    kubectl wait --for=condition=complete job/playwright-chromium-${BUILD_NUMBER} -n automation --timeout=120s
-
-                    kubectl wait --for=condition=complete job/playwright-firefox-${BUILD_NUMBER} -n automation --timeout=120s
-
-                    kubectl wait --for=condition=complete job/playwright-webkit-${BUILD_NUMBER} -n automation --timeout=120s
-                    '''
-
-                    sh '''
-                    kubectl logs job/playwright-chromium-${BUILD_NUMBER}
-                    '''
-            }
-
 }
 
         // stage('Run Kubernetes Job') {
