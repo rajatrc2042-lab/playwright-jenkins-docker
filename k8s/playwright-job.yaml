@@ -22,9 +22,17 @@ spec:
           workingDir: /app
 
           command:
-            - npx
-            - playwright
-            - test
+            - sh
+            - -c
+            - |
+                browserArgs=$(echo "$BROWSERS" | tr ',' '\n' | sed 's/^/--project=/' | tr '\n' ' ')
+
+                grepPattern=$(echo "$SUITES" | tr ',' '\n' | sed 's/^/@/' | paste -sd'|' -)
+
+                echo "Running:"
+                echo "npx playwright test $browserArgs --grep \"$grepPattern\""
+
+                npx playwright test $browserArgs --grep "$grepPattern"
 
           env:
             - name: ENV

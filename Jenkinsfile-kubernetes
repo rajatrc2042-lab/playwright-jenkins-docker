@@ -27,6 +27,7 @@ pipeline {
                 sh '''
                 kubectl get jobs -n automation
                 kubectl get pods -n automation
+                kubectl delete job playwright-job -n automation --ignore-not-found=true
                 envsubst < k8s/playwright-job.yaml | kubectl apply -f -
                 '''
 
