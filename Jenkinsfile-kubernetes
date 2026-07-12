@@ -20,6 +20,8 @@ pipeline {
         stage('Run Kubernetes Job') {
             steps {
                 sh '''
+                kubectl get jobs -n automation
+                kubectl get jobs -n pods
         kubectl apply -f k8s/playwright-job.yaml
         '''
 
@@ -28,7 +30,7 @@ kubectl wait \
 --for=condition=complete \
 job/playwright-job \
 -n automation \
---timeout=600s
+--timeout=120s
 '''
 
                 sh '''
