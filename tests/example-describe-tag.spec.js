@@ -9,7 +9,7 @@ test.describe(
     test("has title desc-reg", async ({ page }) => {
       await page.goto("/");
 
-      // Expect a title "to contain" a substring.
+      // Expect a title "to contain" a substrings
       await expect(page).toHaveTitle(/Playwright/);
     });
 
