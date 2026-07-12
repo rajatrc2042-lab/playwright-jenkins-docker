@@ -16,7 +16,7 @@ spec:
         - name: playwright
 
           # image: playwright-runner-kuber:latest
-          image: playwright-java:1.0
+          image: playwright-java:2.0
 
           imagePullPolicy: Never
 
