@@ -56,16 +56,15 @@ pipeline {
 
         stage('Wait For Jobs') {
             steps {
+                 sh '''
+                kubectl logs job/playwright-chromium-${BUILD_NUMBER} -n automation
+                kubectl logs job/playwright-firefox-${BUILD_NUMBER} -n automation
+                kubectl logs job/playwright-webkit-${BUILD_NUMBER} -n automation
+                '''
                 sh '''
                 kubectl wait --for=condition=complete job/playwright-chromium-${BUILD_NUMBER} -n automation --timeout=120s
                 kubectl wait --for=condition=complete job/playwright-firefox-${BUILD_NUMBER} -n automation --timeout=120s
                 kubectl wait --for=condition=complete job/playwright-webkit-${BUILD_NUMBER} -n automation --timeout=120s
-                '''
-
-                sh '''
-                kubectl logs job/playwright-chromium-${BUILD_NUMBER} -n automation
-                kubectl logs job/playwright-firefox-${BUILD_NUMBER} -n automation
-                kubectl logs job/playwright-webkit-${BUILD_NUMBER} -n automation
                 '''
             }
 }
