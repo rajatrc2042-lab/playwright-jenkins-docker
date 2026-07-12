@@ -57,17 +57,20 @@ pipeline {
             }
         }
 
-        sh '''
-        kubectl wait --for=condition=complete job/playwright-chromium-${BUILD_NUMBER} -n automation --timeout=120s
+            steps{
+                    sh '''
+                    kubectl wait --for=condition=complete job/playwright-chromium-${BUILD_NUMBER} -n automation --timeout=120s
 
-        kubectl wait --for=condition=complete job/playwright-firefox-${BUILD_NUMBER} -n automation --timeout=120s
+                    kubectl wait --for=condition=complete job/playwright-firefox-${BUILD_NUMBER} -n automation --timeout=120s
 
-        kubectl wait --for=condition=complete job/playwright-webkit-${BUILD_NUMBER} -n automation --timeout=120s
-        '''
+                    kubectl wait --for=condition=complete job/playwright-webkit-${BUILD_NUMBER} -n automation --timeout=120s
+                    '''
 
-        sh '''
-        kubectl logs job/playwright-chromium-${BUILD_NUMBER}
-        '''
+                    sh '''
+                    kubectl logs job/playwright-chromium-${BUILD_NUMBER}
+                    '''
+            }
+
 }
 
         // stage('Run Kubernetes Job') {
