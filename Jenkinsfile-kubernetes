@@ -63,6 +63,7 @@ pipeline {
         stage('Run Kubernetes Job') {
             steps {
                 sh '''
+                export BROWSER=chromium
                 kubectl get jobs -n automation
                 kubectl get pods -n automation
                 envsubst < k8s/playwright-${BROWSER}-${BUILD_NUMBER} | kubectl apply -f -
@@ -71,7 +72,7 @@ pipeline {
                 sh '''
                 kubectl wait \
                 --for=condition=complete \
-                job/playwright-job \
+                job/playwright-${BROWSER}-${BUILD_NUMBER} \
                 -n automation \
                 --timeout=120s
                 '''
@@ -79,7 +80,7 @@ pipeline {
                 sh '''
                 kubectl logs \
                 -n automation \
-                -l job-name=playwright-job
+                -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
                 '''
             }
         }
