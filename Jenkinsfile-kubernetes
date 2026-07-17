@@ -107,7 +107,7 @@ pipeline {
             results: [[path: 'allure-results']]
         )
 
-                publishHTML(target: [
+            publishHTML(target: [
             allowMissing: false,
             alwaysLinkToLastBuild: true,
             keepAll: true,
