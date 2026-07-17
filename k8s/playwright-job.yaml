@@ -6,7 +6,7 @@ metadata:
   namespace: automation
 
 spec:
-  ttlSecondsAfterFinished: 300
+  # ttlSecondsAfterFinished: 300
   backoffLimit: 0
 
   template:
