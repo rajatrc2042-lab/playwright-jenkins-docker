@@ -34,144 +34,142 @@ pipeline {
             }
         }
 
-        stage('Run Kubernetes Tests') {
-            parallel {
-                stage('Chromium') {
-                    steps {
-                         script {
+        // stage('Run Kubernetes Tests') {
+            // parallel {
+            //     stage('Chromium') {
+            //         steps {
+            //              script {
 
-            int status = sh(
-                script: '''
+            //                     int status = sh(
+            //                         script: '''
+            //                         export BROWSER=chromium
+
+            //                         envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+
+            //                         kubectl wait \
+            //                         --for=condition=complete \
+            //                         job/playwright-${BROWSER}-${BUILD_NUMBER} \
+            //                         -n automation \
+            //                         --timeout=90s
+            //                         ''',
+            //                         returnStatus: true
+            //                     )
+
+            //                     sh '''
+            //                     POD=$(kubectl get pods -n automation \
+            //                     -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
+            //                     -o jsonpath='{.items[0].metadata.name}')
+
+            //                     kubectl logs $POD -n automation || true
+
+            //                     kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
+            //                     kubectl cp automation/$POD:/app/allure-results ./allure-results || true
+            //                     kubectl cp automation/$POD:/app/test-results ./test-results || true
+            //                     '''
+
+            //                     if (status != 0) {
+            //                         error("Playwright tests failed")
+            //                     }
+            //                 }
+            //                             }
+            //                         }
+
+            //     stage('Firefox') {
+            //         steps {
+            //              script {
+
+            //                     int status = sh(
+            //                         script: '''
+            //                         export BROWSER=firefox
+
+            //                         envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+
+            //                         kubectl wait \
+            //                         --for=condition=complete \
+            //                         job/playwright-${BROWSER}-${BUILD_NUMBER} \
+            //                         -n automation \
+            //                         --timeout=90s
+            //                         ''',
+            //                         returnStatus: true
+            //                     )
+
+            //                     sh '''
+            //                     POD=$(kubectl get pods -n automation \
+            //                     -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
+            //                     -o jsonpath='{.items[0].metadata.name}')
+
+            //                     kubectl logs $POD -n automation || true
+
+            //                     kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
+            //                     kubectl cp automation/$POD:/app/allure-results ./allure-results || true
+            //                     kubectl cp automation/$POD:/app/test-results ./test-results || true
+            //                     '''
+
+            //                     if (status != 0) {
+            //                         error("Playwright tests failed")
+            //                     }
+            //                 }
+            //                             }
+            //                         }
+
+            //     stage('WebKit') {
+            //         steps {
+            //              script {
+
+            //                     int status = sh(
+            //                         script: '''
+            //                         export BROWSER=webkit
+
+            //                         envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+
+            //                         kubectl wait \
+            //                         --for=condition=complete \
+            //                         job/playwright-${BROWSER}-${BUILD_NUMBER} \
+            //                         -n automation \
+            //                         --timeout=90s
+            //                         ''',
+            //                         returnStatus: true
+            //                     )
+
+            //                     sh '''
+            //                     POD=$(kubectl get pods -n automation \
+            //                     -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
+            //                     -o jsonpath='{.items[0].metadata.name}')
+
+            //                     kubectl logs $POD -n automation || true
+
+            //                     kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
+            //                     kubectl cp automation/$POD:/app/allure-results ./allure-results || true
+            //                     kubectl cp automation/$POD:/app/test-results ./test-results || true
+            //                     '''
+
+            //                     if (status != 0) {
+            //                         error("Playwright tests failed")
+            //                     }
+            //                 }
+            //                     }
+            //                 }
+
+        stage('Run Kubernetes Job') {
+            steps {
+                sh '''
                 export BROWSER=chromium
-
+                kubectl get jobs -n automation
+                kubectl get pods -n automation
                 envsubst < k8s/playwright-job.yaml | kubectl apply -f -
 
                 kubectl wait \
-                  --for=condition=complete \
-                  job/playwright-${BROWSER}-${BUILD_NUMBER} \
-                  -n automation \
-                  --timeout=90s
-                ''',
-                returnStatus: true
-            )
+                --for=condition=complete \
+                job/playwright-${BROWSER}-${BUILD_NUMBER} \
+                -n automation \
+                --timeout=90s
 
-            sh '''
-            POD=$(kubectl get pods -n automation \
-              -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
-              -o jsonpath='{.items[0].metadata.name}')
-
-            kubectl logs $POD -n automation || true
-
-            kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
-            kubectl cp automation/$POD:/app/allure-results ./allure-results || true
-            kubectl cp automation/$POD:/app/test-results ./test-results || true
+            kubectl logs \
+            -n automation \
+            -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
             '''
-
-            if (status != 0) {
-                error("Playwright tests failed")
-            }
-        }
-                    }
-                }
-
-                stage('Firefox') {
-                    steps {
-                         script {
-
-            int status = sh(
-                script: '''
-                export BROWSER=firefox
-
-                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-
-                kubectl wait \
-                  --for=condition=complete \
-                  job/playwright-${BROWSER}-${BUILD_NUMBER} \
-                  -n automation \
-                  --timeout=90s
-                ''',
-                returnStatus: true
-            )
-
-            sh '''
-            POD=$(kubectl get pods -n automation \
-              -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
-              -o jsonpath='{.items[0].metadata.name}')
-
-            kubectl logs $POD -n automation || true
-
-            kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
-            kubectl cp automation/$POD:/app/allure-results ./allure-results || true
-            kubectl cp automation/$POD:/app/test-results ./test-results || true
-            '''
-
-            if (status != 0) {
-                error("Playwright tests failed")
-            }
-        }
-                    }
-                }
-
-                stage('WebKit') {
-                    steps {
-                         script {
-
-            int status = sh(
-                script: '''
-                export BROWSER=webkit
-
-                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-
-                kubectl wait \
-                  --for=condition=complete \
-                  job/playwright-${BROWSER}-${BUILD_NUMBER} \
-                  -n automation \
-                  --timeout=90s
-                ''',
-                returnStatus: true
-            )
-
-            sh '''
-            POD=$(kubectl get pods -n automation \
-              -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
-              -o jsonpath='{.items[0].metadata.name}')
-
-            kubectl logs $POD -n automation || true
-
-            kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
-            kubectl cp automation/$POD:/app/allure-results ./allure-results || true
-            kubectl cp automation/$POD:/app/test-results ./test-results || true
-            '''
-
-            if (status != 0) {
-                error("Playwright tests failed")
-            }
-        }
-            }
-        }
-
-        // stage('Run Kubernetes Job') {
-        //     steps {
-        //         sh '''
-        //         export BROWSER=chromium
-        //         kubectl get jobs -n automation
-        //         kubectl get pods -n automation
-        //         envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-
-        //         kubectl wait \
-        //         --for=condition=complete \
-        //         job/playwright-${BROWSER}-${BUILD_NUMBER} \
-        //         -n automation \
-        //         --timeout=120s
-
-    //         kubectl logs \
-    //         -n automation \
-    //         -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
-    //         '''
-    //     }
-    // }
     }
-        }
+    }
     }
     post {
             success {
@@ -204,5 +202,5 @@ pipeline {
 
             // cleanWs()/
             }
-    }
+}
 }
