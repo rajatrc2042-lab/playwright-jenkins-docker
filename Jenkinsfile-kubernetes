@@ -30,8 +30,8 @@ pipeline {
                         sh '''
                         export BROWSER=chromium
                         envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=60s
-                        kubectl logs -n automation -l job-name=job/playwright-firefox-${BUILD_NUMBER}
+                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=120s
+                        kubectl logs job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation
                         '''
                     }
                 }
@@ -41,8 +41,8 @@ pipeline {
                         sh '''
                         export BROWSER=firefox
                         envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=60s
-                        kubectl logs -n automation -l job-name=job/playwright-firefox-${BUILD_NUMBER}
+                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=120s
+                        kubectl logs job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation
                         '''
                     }
                 }
@@ -52,8 +52,8 @@ pipeline {
                         sh '''
                         export BROWSER=webkit
                         envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=60s
-                        kubectl logs -n automation -l job-name=job/playwright-firefox-${BUILD_NUMBER}
+                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=120s
+                        kubectl logs job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation
                         '''
                     }
                 }
