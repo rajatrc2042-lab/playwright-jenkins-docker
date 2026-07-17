@@ -6,6 +6,18 @@ pipeline {
         SUITES = "${params.SUITES}"
         BROWSERS = "${params.BROWSERS}"
     }
+
+    options {
+        timeout(
+        time: 30,
+        unit: 'MINUTES'
+    )
+        buildDiscarder(
+        logRotator(
+            numToKeepStr: '20'
+        )
+    )
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -24,7 +36,6 @@ pipeline {
 
         stage('Run Kubernetes Tests') {
             parallel {
-
                 stage('Chromium') {
                     steps {
                         sh '''
@@ -58,7 +69,7 @@ pipeline {
                     }
                 }
             }
-}
+        }
 
         // stage('Run Kubernetes Job') {
         //     steps {
@@ -73,7 +84,7 @@ pipeline {
         //         job/playwright-${BROWSER}-${BUILD_NUMBER} \
         //         -n automation \
         //         --timeout=120s
-            
+
         //         kubectl logs \
         //         -n automation \
         //         -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
@@ -81,4 +92,36 @@ pipeline {
         //     }
         // }
     }
+    post {
+            success {
+                echo 'Tests Passed'
+            }
+
+            failure {
+                echo 'Tests Failed'
+            }
+            always {
+                allure(
+            includeProperties: false,
+            jdk: '',
+            results: [[path: 'allure-results']]
+        )
+
+                publishHTML(target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'playwright-report',
+            reportFiles: 'index.html',
+            reportName: 'Playwright HTML Report'
+        ])
+
+                archiveArtifacts(
+            artifacts: 'playwright-report/**, test-results/**, allure-results/**',
+            fingerprint: true
+)
+
+            // cleanWs()
+            }
+        }
 }
