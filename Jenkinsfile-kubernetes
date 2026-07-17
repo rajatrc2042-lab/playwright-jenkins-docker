@@ -71,6 +71,19 @@ pipeline {
             }
         }
 
+        stage('copy reports from pod to jenkin worksapce') {
+            steps {
+                sh '''
+                POD=$(kubectl get pods -n automation \
+                -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
+                -o jsonpath='{.items[0].metadata.name}')
+
+                kubectl cp automation/$POD:/app/playwright-report ./playwright-report
+                kubectl cp automation/$POD:/app/allure-results ./allure-results
+                kubectl cp automation/$POD:/app/test-results ./test-results
+                '''
+            }
+        }
         // stage('Run Kubernetes Job') {
         //     steps {
         //         sh '''
@@ -85,12 +98,12 @@ pipeline {
         //         -n automation \
         //         --timeout=120s
 
-        //         kubectl logs \
-        //         -n automation \
-        //         -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
-        //         '''
-        //     }
-        // }
+    //         kubectl logs \
+    //         -n automation \
+    //         -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
+    //         '''
+    //     }
+    // }
     }
     post {
             success {
@@ -123,5 +136,5 @@ pipeline {
 
             // cleanWs()
             }
-        }
+    }
 }
