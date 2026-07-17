@@ -38,85 +38,118 @@ pipeline {
             parallel {
                 stage('Chromium') {
                     steps {
-                        sh '''
-                        export BROWSER=chromium
-                        envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=90s
-                        RESULT=$?
+                         script {
 
-        POD=$(kubectl get pods -n automation \
-          -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
-          -o jsonpath='{.items[0].metadata.name}')
+            int status = sh(
+                script: '''
+                export BROWSER=chromium
 
-        kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
-        kubectl cp automation/$POD:/app/allure-results ./allure-results || true
-        kubectl cp automation/$POD:/app/test-results ./test-results || true
+                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
 
-        exit $RESULT
-                        kubectl logs job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation
-                        '''
+                kubectl wait \
+                  --for=condition=complete \
+                  job/playwright-${BROWSER}-${BUILD_NUMBER} \
+                  -n automation \
+                  --timeout=90s
+                ''',
+                returnStatus: true
+            )
+
+            sh '''
+            POD=$(kubectl get pods -n automation \
+              -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
+              -o jsonpath='{.items[0].metadata.name}')
+
+            kubectl logs $POD -n automation || true
+
+            kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
+            kubectl cp automation/$POD:/app/allure-results ./allure-results || true
+            kubectl cp automation/$POD:/app/test-results ./test-results || true
+            '''
+
+            if (status != 0) {
+                error("Playwright tests failed")
+            }
+        }
                     }
                 }
 
                 stage('Firefox') {
                     steps {
-                        sh '''
-                        export BROWSER=firefox
-                        envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=90s
-                       RESULT=$?
+                         script {
 
-        POD=$(kubectl get pods -n automation \
-          -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
-          -o jsonpath='{.items[0].metadata.name}')
+            int status = sh(
+                script: '''
+                export BROWSER=firefox
 
-        kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
-        kubectl cp automation/$POD:/app/allure-results ./allure-results || true
-        kubectl cp automation/$POD:/app/test-results ./test-results || true
+                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
 
-        exit $RESULT
-                        kubectl logs job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation
-                        '''
+                kubectl wait \
+                  --for=condition=complete \
+                  job/playwright-${BROWSER}-${BUILD_NUMBER} \
+                  -n automation \
+                  --timeout=90s
+                ''',
+                returnStatus: true
+            )
+
+            sh '''
+            POD=$(kubectl get pods -n automation \
+              -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
+              -o jsonpath='{.items[0].metadata.name}')
+
+            kubectl logs $POD -n automation || true
+
+            kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
+            kubectl cp automation/$POD:/app/allure-results ./allure-results || true
+            kubectl cp automation/$POD:/app/test-results ./test-results || true
+            '''
+
+            if (status != 0) {
+                error("Playwright tests failed")
+            }
+        }
                     }
                 }
 
                 stage('WebKit') {
                     steps {
-                        sh '''
-                        export BROWSER=webkit
-                        envsubst < k8s/playwright-job.yaml | kubectl apply -f -
-                        kubectl wait --for=condition=complete job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation --timeout=90s
-                        RESULT=$?
+                         script {
 
-        POD=$(kubectl get pods -n automation \
-          -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
-          -o jsonpath='{.items[0].metadata.name}')
+            int status = sh(
+                script: '''
+                export BROWSER=webkit
 
-        kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
-        kubectl cp automation/$POD:/app/allure-results ./allure-results || true
-        kubectl cp automation/$POD:/app/test-results ./test-results || true
+                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
 
-        exit $RESULT
-                        kubectl logs job/playwright-${BROWSER}-${BUILD_NUMBER} -n automation
-                        '''
-                    }
-                }
+                kubectl wait \
+                  --for=condition=complete \
+                  job/playwright-${BROWSER}-${BUILD_NUMBER} \
+                  -n automation \
+                  --timeout=90s
+                ''',
+                returnStatus: true
+            )
+
+            sh '''
+            POD=$(kubectl get pods -n automation \
+              -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
+              -o jsonpath='{.items[0].metadata.name}')
+
+            kubectl logs $POD -n automation || true
+
+            kubectl cp automation/$POD:/app/playwright-report ./playwright-report || true
+            kubectl cp automation/$POD:/app/allure-results ./allure-results || true
+            kubectl cp automation/$POD:/app/test-results ./test-results || true
+            '''
+
+            if (status != 0) {
+                error("Playwright tests failed")
+            }
+        }
             }
         }
 
-        stage('copy reports from pod to jenkin worksapce') {
-            steps {
-                sh '''
-                POD=$(kubectl get pods -n automation \
-                -l job-name=playwright-${BROWSER}-${BUILD_NUMBER} \
-                -o jsonpath='{.items[0].metadata.name}')
-
-                kubectl cp automation/$POD:/app/playwright-report ./playwright-report
-                kubectl cp automation/$POD:/app/allure-results ./allure-results
-                kubectl cp automation/$POD:/app/test-results ./test-results
-                '''
-            }
-        }
         // stage('Run Kubernetes Job') {
         //     steps {
         //         sh '''
