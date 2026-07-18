@@ -61,3 +61,6 @@ spec:
 
             - name: SUITES
               value: "${SUITE}"
+
+            - name: BUILD_NUMBER
+              value: "${BUILD_NUMBER}"
