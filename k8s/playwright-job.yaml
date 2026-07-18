@@ -51,6 +51,21 @@ spec:
                 cp -r playwright-report /reports/${BUILD_NUMBER}/${BROWSER}/
                 cp -r allure-results /reports/${BUILD_NUMBER}/${BROWSER}/
                 cp -r test-results /reports/${BUILD_NUMBER}/${BROWSER}/
+                echo "===== DEBUG ====="
+                echo "PWD:"
+                pwd
+
+                echo "BUILD_NUMBER=$BUILD_NUMBER"
+                echo "BROWSERS=$BROWSERS"
+
+                echo "Current directory:"
+                ls -R .
+
+                echo "Reports folder:"
+                ls -R /reports || true
+
+                echo "Current build folder:"
+                ls -R /reports/${BUILD_NUMBER} || true
 
           env:
             - name: ENV

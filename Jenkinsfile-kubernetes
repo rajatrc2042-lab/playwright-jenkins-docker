@@ -177,13 +177,6 @@ pipeline {
                 // Always copy reports
                 sh """
                 rm -rf allure-results playwright-report test-results
-                echo "===== REPORTS ====="
-                pwd
-
-                echo "===== /reports ====="
-                ls -R /reports || true
-
-                echo "===== BUILD FOLDER ====="
                 ls -R /reports/${BUILD_NUMBER} || true
                 cp -r /reports/${BUILD_NUMBER}/chromium/allure-results .
                 cp -r /reports/${BUILD_NUMBER}/chromium/playwright-report .
