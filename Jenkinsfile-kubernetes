@@ -183,17 +183,15 @@ pipeline {
             allure(
                 results: [[path: "/reports/${BUILD_NUMBER}/chromium/allure-results"]]
 )
-
-            publishHTML(target: [
+publishHTML(target: [
                     reportDir: "/reports/${BUILD_NUMBER}/chromium/playwright-report",
                     reportFiles: "index.html",
                     reportName: "Playwright HTML Report"
 ])
-
-            archiveArtifacts(
-            artifacts: 'playwright-report/**, test-results/**, allure-results/**',
-            fingerprint: true
-)
+            // archiveArtifacts(
+            // artifacts: 'playwright-report/**, test-results/**, allure-results/**',
+            // fingerprint: true
+// )
 
             // cleanWs()/
             }
