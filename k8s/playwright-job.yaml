@@ -13,6 +13,11 @@ spec:
     spec:
       restartPolicy: Never
 
+      volumes:
+        - name: reports
+          hostPath:
+            path: /reports
+
       containers:
         - name: playwright
 
@@ -20,11 +25,6 @@ spec:
           image: playwright-java:2.0
 
           imagePullPolicy: Never
-
-          volumes:
-            - name: reports
-              hostPath:
-                path: /reports
 
           volumeMounts:
                   - name: reports
