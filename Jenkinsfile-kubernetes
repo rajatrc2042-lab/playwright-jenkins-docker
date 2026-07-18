@@ -152,22 +152,43 @@ pipeline {
 
         stage('Run Kubernetes Job') {
             steps {
-                sh '''
-                export BROWSER=chromium
-                kubectl get jobs -n automation
-                kubectl get pods -n automation
-                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+                script {
 
-                kubectl wait \
-                --for=condition=complete \
-                job/playwright-${BROWSER}-${BUILD_NUMBER} \
-                -n automation \
-                --timeout=90s
+                        int status = sh(
+                            script: '''
+                            export BROWSER=chromium
 
-            kubectl logs \
-            -n automation \
-            -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
-            '''
+                            kubectl get jobs -n automation
+                            kubectl get pods -n automation
+
+                            envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+
+                            kubectl wait \
+                            --for=condition=complete \
+                            job/playwright-${BROWSER}-${BUILD_NUMBER} \
+                            -n automation \
+                            --timeout=90s
+                            ''',
+                            returnStatus: true
+                        )
+
+                        sh '''
+                        POD=$(kubectl get pods \
+                        -n automation \
+                        -l job-name=playwright-chromium-${BUILD_NUMBER} \
+                        -o jsonpath='{.items[0].metadata.name}')
+
+                        kubectl logs $POD -n automation || true
+
+                        kubectl cp automation/$POD:/app/playwright-jenkins-docker/playwright-report ./playwright-report || true
+                        kubectl cp automation/$POD:/app/playwright-jenkins-docker/allure-results ./allure-results || true
+                        kubectl cp automation/$POD:/app/playwright-jenkins-docker/test-results ./test-results || true
+                        '''
+
+                        if (status != 0) {
+                            error("Chromium tests failed")
+                        }
+        }
     }
     }
     }
@@ -180,7 +201,7 @@ pipeline {
                 echo 'Tests Failed'
             }
             always {
-                allure(
+            allure(
             includeProperties: false,
             jdk: '',
             results: [[path: 'allure-results']]
@@ -195,7 +216,7 @@ pipeline {
             reportName: 'Playwright HTML Report'
         ])
 
-                archiveArtifacts(
+            archiveArtifacts(
             artifacts: 'playwright-report/**, test-results/**, allure-results/**',
             fingerprint: true
 )
