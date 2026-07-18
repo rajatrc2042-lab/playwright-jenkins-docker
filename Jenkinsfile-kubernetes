@@ -152,48 +152,56 @@ pipeline {
 
         stage('Run Kubernetes Job') {
             steps {
-                sh '''
+                script {
+
+                int status = sh(
+                s   cript: '''
                 export BROWSER=chromium
-                kubectl get jobs -n automation
-                kubectl get pods -n automation
+
                 envsubst < k8s/playwright-job.yaml | kubectl apply -f -
 
                 kubectl wait \
-                --for=condition=complete \
-                job/playwright-${BROWSER}-${BUILD_NUMBER} \
-                -n automation \
-                --timeout=90s
+                  --for=condition=complete \
+                  job/playwright-${BROWSER}-${BUILD_NUMBER} \
+                  -n automation \
+                  --timeout=90s
+                ''',
+                returnStatus: true
+            )
 
-                kubectl logs \
-                -n automation \
-                -l job-name=playwright-${BROWSER}-${BUILD_NUMBER}
-                '''
+                // Always copy reports
+                sh """
+                rm -rf allure-results playwright-report test-results
+
+                cp -r /reports/${BUILD_NUMBER}/chromium/allure-results .
+                cp -r /reports/${BUILD_NUMBER}/chromium/playwright-report .
+                cp -r /reports/${BUILD_NUMBER}/chromium/test-results .
+                """
+
+                if (status != 0) {
+                    error("Chromium execution failed")
+                }
+        }
     }
     }
     }
     post {
-            success {
-                echo 'Tests Passed'
-            }
+    always {
 
-            failure {
-                echo 'Tests Failed'
-            }
-            always {
-            allure(
-                results: [[path: "/reports/${BUILD_NUMBER}/chromium/allure-results"]]
-)
-publishHTML(target: [
-                    reportDir: "/reports/${BUILD_NUMBER}/chromium/playwright-report",
-                    reportFiles: "index.html",
-                    reportName: "Playwright HTML Report"
-])
-            // archiveArtifacts(
-            // artifacts: 'playwright-report/**, test-results/**, allure-results/**',
-            // fingerprint: true
-// )
+        allure(
+            results: [[path: 'allure-results']]
+        )
 
-            // cleanWs()/
-            }
+        publishHTML(target: [
+            reportDir: 'playwright-report',
+            reportFiles: 'index.html',
+            reportName: 'Playwright HTML Report'
+        ])
+
+        archiveArtifacts(
+            artifacts: 'playwright-report/**,allure-results/**,test-results/**',
+            fingerprint: true
+        )
+    }
 }
 }
