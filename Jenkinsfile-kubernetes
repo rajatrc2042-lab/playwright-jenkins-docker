@@ -158,7 +158,12 @@ pipeline {
                 script: '''
                 export BROWSER=chromium
 
-                envsubst < k8s/playwright-job.yaml | kubectl apply -f -
+                envsubst < k8s/playwright-job.yaml > /tmp/job.yaml
+
+                echo "========== YAML =========="
+                cat /tmp/job.yaml
+
+                kubectl apply -f /tmp/job.yaml
 
                 kubectl wait \
                   --for=condition=complete \
@@ -174,8 +179,6 @@ pipeline {
                 rm -rf allure-results playwright-report test-results
                 echo "===== REPORTS ====="
                 pwd
-
-                ls -R .
 
                 echo "===== /reports ====="
                 ls -R /reports || true
