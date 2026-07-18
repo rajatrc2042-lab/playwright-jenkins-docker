@@ -21,6 +21,14 @@ spec:
 
           imagePullPolicy: Never
 
+          volumes:
+            - name: reports
+              hostPath:
+                path: /reports
+
+          volumeMounts:
+                  - name: reports
+                    mountPath: /reports
           workingDir: /app
 
           command:
@@ -38,6 +46,11 @@ spec:
                 cd playwright-jenkins-docker
                 npm ci
                 npx playwright test $browserArgs --grep "$grepPattern"
+                mkdir -p /reports/${BUILD_NUMBER}/${BROWSER}
+
+                cp -r playwright-report /reports/${BUILD_NUMBER}/${BROWSER}/
+                cp -r allure-results /reports/${BUILD_NUMBER}/${BROWSER}/
+                cp -r test-results /reports/${BUILD_NUMBER}/${BROWSER}/
 
           env:
             - name: ENV
