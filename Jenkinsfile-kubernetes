@@ -155,7 +155,7 @@ pipeline {
                 script {
 
                 int status = sh(
-                s   cript: '''
+                script: '''
                 export BROWSER=chromium
 
                 envsubst < k8s/playwright-job.yaml | kubectl apply -f -
